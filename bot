@@ -1,0 +1,34 @@
+from vk_api.longpoll import VkLongPoll, VkEventType
+import vk_api
+from datetime import datetime
+import random
+
+
+token = ""
+vk_session = vk_api.VkApi(token=token)
+
+
+session_api = vk_session.get_api()
+longpoll = VkLongPoll(vk_session)
+for event in longpoll.listen():
+    if event.type == VkEventType.MESSAGE_NEW:
+        print('Сообщение пришло в: ' +
+              str(datetime.strftime(datetime.now(), "%H:%M:%S")))
+        print('Текст сообщения: ' + str(event.text))
+        fif = event.user_id
+        print(fif)
+        response = event.text.lower()
+        if event.from_user and not (event.from_me):
+            if response == 'qwe':
+                vk_session.method('messages.send', {
+                                  'user_id': fif, 'message': 'Свинья', 'random_id': 0})
+        if event.from_user and not (event.from_me):
+            if response == 'photo' or 'фото':
+                vk_session.method('messages.send', {
+                    'peer_id': fif, 'attachment': 'photo308952294_456239451', 'random_id': 0
+                })
+        if event.from_user and not (event.from_me):
+            if response == 'кот' or 'кошка' or 'котик' or 'кошак':
+                vk_session.method('message.send', {
+
+                })
