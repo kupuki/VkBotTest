@@ -1,0 +1,79 @@
+from vk_api.longpoll import VkLongPoll, VkEventType
+import vk_api
+from datetime import datetime
+import random
+from vk_api.keyboard import VkKeyboard, VkKeyboardColor
+import shutil
+import sys
+import codecs
+
+token = ""
+vk_session = vk_api.VkApi(token=token)
+
+session_api = vk_session.get_api()
+longpoll = VkLongPoll(vk_session)
+
+
+def create_keyboard(response):
+    keyboard = VkKeyboard(one_time=False)
+    if response == 'тест':
+        keyboard.add_button('white button', color=VkKeyboardColor.DEFAULT)
+        keyboard.add_button('green button', color=VkKeyboardColor.POSITIVE)
+
+        keyboard.add_line()  # Переход на вторую строку
+        keyboard.add_button('red button', color=VkKeyboardColor.NEGATIVE)
+
+        keyboard.add_line()
+        keyboard.add_button('blue button', color=VkKeyboardColor.PRIMARY)
+
+        keyboard.add_button('Закрыть', color=VkKeyboardColor.NEGATIVE)
+
+    elif response == 'закрыть':
+        return keyboard.get_empty_keyboard()
+
+    keyboard = keyboard.get_keyboard()
+    return keyboard
+
+
+# def oss():
+#   with open('test.txt', encoding='utf-8') as file:
+#      shutil.copyfileobj(file, sys.stdout)
+
+
+timetable = open('test.txt', encoding='utf-8') #txt файл с расписанием
+timetable = timetable.read()
+
+
+def send_message(vk_session, id_type, id, message=None, attachment=None, keyboard=None):
+    vk_session.method('messages.send', {id_type: id, 'message': message, 'random_id': random.randint(
+        -2147483648, +2147483648), "attachment": attachment, 'keyboard': keyboard})
+
+
+for event in longpoll.listen():
+    if event.type == VkEventType.MESSAGE_NEW:
+        print('Сообщение пришло в: ' +
+              str(datetime.strftime(datetime.now(), "%H:%M:%S")))
+        print('Текст сообщения: ' + str(event.text))
+        fif = event.user_id
+        print(fif)
+        response = event.text.lower()
+        keyboard = create_keyboard(response)
+        if event.from_user and not (event.from_me):
+            if response == 'qwe' or response == 'йцу':
+                vk_session.method('messages.send', {
+                                  'user_id': fif, 'message': 'Свинья', 'random_id': 0})
+            elif response == 'photo' or response == 'фото':
+                vk_session.method('messages.send', {
+                    'peer_id': fif, 'attachment': 'photo308952294_456239451', 'random_id': 0
+                })
+            elif response == 'asd':
+                vk_session.method('messages.send', {
+                    'user_id': fif, 'message': 'Свинья', 'random_id': 0
+                })
+            elif response == "тест":
+                send_message(vk_session, 'user_id', event.user_id,
+                             message='Тестовые команды', keyboard=keyboard)
+            elif response == 'sd':
+                vk_session.method('messages.send', {
+                    'user_id': fif, 'message': timetable, 'random_id': 0
+                })
